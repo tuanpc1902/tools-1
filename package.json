@@ -1,0 +1,14 @@
+{
+  "name": "local-reminder-desk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A tiny local reminder app with native Windows popups.",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

@@ -1,0 +1,4 @@
+data/reminders.json
+data/reminders.json.tmp
+data/reminders.corrupt-*.json
+node_modules/

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <title>Reminder Desk</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="aurora aurora-one" aria-hidden="true"></div>
+  <div class="aurora aurora-two" aria-hidden="true"></div>
+
+  <div class="page-shell">
+    <header class="masthead">
+      <a class="brand" href="#main-content" aria-label="Reminder Desk home">
+        <span class="brand-orbit" aria-hidden="true"><i></i></span>
+        <span class="brand-copy">
+          <small>Local notification console</small>
+          <strong>Reminder <em>Desk</em></strong>
+        </span>
+      </a>
+
+      <div class="clock-block" aria-label="Current local time">
+        <div class="clock-meta">
+          <span id="current-date">—</span>
+          <span class="running"><i aria-hidden="true"></i> watching locally</span>
+        </div>
+        <strong id="current-time">--:--:--</strong>
+      </div>
+    </header>
+
+    <section class="hero" aria-labelledby="page-heading">
+      <div>
+        <p class="eyebrow">Your time, in view</p>
+        <h1 id="page-heading">Put the next thing<br><span>on your horizon.</span></h1>
+      </div>
+      <p class="hero-copy">Create a Windows alert, choose when it returns, then leave this command window quietly keeping watch.</p>
+    </section>
+
+    <main id="main-content" class="desk-grid">
+      <section class="composer glass-panel" aria-labelledby="form-heading">
+        <div class="panel-heading">
+          <div>
+            <p class="section-tag"><i aria-hidden="true"></i> Create</p>
+            <h2 id="form-heading">Set a reminder</h2>
+          </div>
+          <span class="panel-symbol" aria-hidden="true">＋</span>
+        </div>
+        <p class="section-copy">Choose a moment or a rhythm. Alerts continue even when this browser tab is closed.</p>
+
+        <form id="reminder-form" novalidate>
+          <input type="hidden" id="reminder-id">
+
+          <label class="field">
+            <span>Reminder title <b aria-hidden="true">*</b></span>
+            <input id="title" name="title" type="text" maxlength="100" placeholder="Take a proper break" required autofocus>
+          </label>
+
+          <label class="field">
+            <span>Note <small>optional</small></span>
+            <textarea id="message" name="message" rows="3" maxlength="500" placeholder="Walk, stretch, drink some water."></textarea>
+          </label>
+
+          <fieldset class="repeat-picker">
+            <legend>Repeat</legend>
+            <div class="segmented repeat-options">
+              <label>
+                <input type="radio" name="repeat-type" value="none" checked>
+                <span>One time</span>
+              </label>
+              <label>
+                <input type="radio" name="repeat-type" value="interval">
+                <span>Interval</span>
+              </label>
+              <label>
+                <input type="radio" name="repeat-type" value="daily">
+                <span>Daily</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset id="one-time-mode" class="mode-picker">
+            <legend>Trigger condition</legend>
+            <div class="segmented">
+              <label>
+                <input type="radio" name="mode" value="countdown" checked>
+                <span>Countdown</span>
+              </label>
+              <label>
+                <input type="radio" name="mode" value="datetime">
+                <span>Date &amp; time</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset id="countdown-fields" class="time-fields">
+            <legend>Countdown duration</legend>
+            <label><span>Hours</span><input id="hours" inputmode="numeric" type="number" min="0" step="1" value="0"></label>
+            <label><span>Minutes</span><input id="minutes" inputmode="numeric" type="number" min="0" step="1" value="5"></label>
+            <label><span>Seconds</span><input id="seconds" inputmode="numeric" type="number" min="0" max="59" step="1" value="0"></label>
+          </fieldset>
+
+          <label id="datetime-field" class="field" hidden>
+            <span>Local date &amp; time</span>
+            <input id="trigger-at" type="datetime-local">
+          </label>
+
+          <label id="daily-time-field" class="field" hidden>
+            <span>Alert every day at</span>
+            <input id="daily-time" type="time">
+          </label>
+
+          <div id="form-status" class="form-status" role="status" aria-live="polite"></div>
+
+          <div class="form-actions">
+            <button class="primary-button" type="submit"><span id="submit-label">Set reminder</span><b aria-hidden="true">→</b></button>
+            <button id="cancel-edit" class="text-button" type="button" hidden>Cancel edit</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="reminder-board" aria-labelledby="active-heading">
+        <div class="board-heading">
+          <div>
+            <p class="section-tag"><i aria-hidden="true"></i> Timeline · soonest first</p>
+            <h2 id="active-heading">Coming up</h2>
+          </div>
+          <span id="active-count" class="count-stamp">0 active</span>
+        </div>
+        <div id="active-list" class="card-list timeline-list" aria-label="Reminder timeline" aria-live="polite"></div>
+
+        <details class="completed-drawer">
+          <summary><span>Earlier reminders</span><span id="completed-count">0</span></summary>
+          <div id="completed-list" class="card-list completed-list"></div>
+        </details>
+      </section>
+    </main>
+
+    <footer>
+      <span><i aria-hidden="true"></i> Data stays on this machine</span>
+      <span>Keep the command window open</span>
+    </footer>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>
