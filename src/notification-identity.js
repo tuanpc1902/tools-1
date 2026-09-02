@@ -23,15 +23,17 @@ async function ensureNotificationIdentity({
     SHORTCUT_NAME,
   );
 
+  let shortcutExists = false;
   try {
     await access(shortcutPath);
-    return { created: false, shortcutPath };
+    shortcutExists = true;
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
   }
 
   const registrationScript = path.resolve(projectRoot, 'scripts', 'register-notification-identity.ps1');
   const entryPath = path.resolve(projectRoot, 'src', 'index.js');
+  const protocolCommandPath = path.resolve(projectRoot, 'scripts', 'confirm-reminder.js');
 
   await new Promise((resolve, reject) => {
     const child = spawn(
@@ -53,6 +55,10 @@ async function ensureNotificationIdentity({
         projectRoot,
         '-AppId',
         APP_ID,
+        '-ProtocolScheme',
+        'reminderdesk',
+        '-ProtocolCommandPath',
+        protocolCommandPath,
       ],
       {
         shell: false,
@@ -76,7 +82,7 @@ async function ensureNotificationIdentity({
     });
   });
 
-  return { created: true, shortcutPath };
+  return { created: !shortcutExists, shortcutPath };
 }
 
 module.exports = { APP_ID, SHORTCUT_NAME, ensureNotificationIdentity };

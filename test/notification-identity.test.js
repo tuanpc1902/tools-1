@@ -26,16 +26,16 @@ function spawnWithExit(exitCode, calls) {
   };
 }
 
-test('existing notification shortcut skips registration', async () => {
-  let spawnCount = 0;
+test('existing notification shortcut still refreshes protocol registration', async () => {
+  const calls = [];
   const result = await ensureNotificationIdentity({
     ...options,
     access: async () => {},
-    spawn: () => { spawnCount += 1; },
+    spawn: spawnWithExit(0, calls),
   });
 
   assert.equal(result.created, false);
-  assert.equal(spawnCount, 0);
+  assert.equal(calls.length, 1);
   assert.equal(
     result.shortcutPath,
     'C:\\Users\\Me\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Reminder Desk.lnk',
@@ -64,6 +64,8 @@ test('missing shortcut launches per-user registration with absolute paths', asyn
   assert.equal(valueAfter('-WorkingDirectory'), options.projectRoot);
   assert.equal(valueAfter('-EntryPath'), path.join(options.projectRoot, 'src', 'index.js'));
   assert.equal(valueAfter('-ShortcutPath'), result.shortcutPath);
+  assert.equal(valueAfter('-ProtocolScheme'), 'reminderdesk');
+  assert.equal(valueAfter('-ProtocolCommandPath'), path.join(options.projectRoot, 'scripts', 'confirm-reminder.js'));
   assert.equal(path.isAbsolute(valueAfter('-File')), true);
 });
 

@@ -3,7 +3,9 @@ param(
     [Parameter(Mandatory = $true)][string]$TargetPath,
     [Parameter(Mandatory = $true)][string]$EntryPath,
     [Parameter(Mandatory = $true)][string]$WorkingDirectory,
-    [Parameter(Mandatory = $true)][string]$AppId
+    [Parameter(Mandatory = $true)][string]$AppId,
+    [Parameter(Mandatory = $true)][string]$ProtocolScheme,
+    [Parameter(Mandatory = $true)][string]$ProtocolCommandPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -155,3 +157,11 @@ namespace ReminderDeskShellRegistration
     $WorkingDirectory,
     $AppId
 )
+
+$protocolRoot = "Registry::HKEY_CURRENT_USER\Software\Classes\$ProtocolScheme"
+$protocolCommand = Join-Path $protocolRoot 'shell\open\command'
+New-Item -Path $protocolCommand -Force | Out-Null
+New-ItemProperty -Path $protocolRoot -Name '(Default)' -Value "URL:Reminder Desk Confirmation" -PropertyType String -Force | Out-Null
+New-ItemProperty -Path $protocolRoot -Name 'URL Protocol' -Value '' -PropertyType String -Force | Out-Null
+$commandValue = '"{0}" "{1}" "%1"' -f $TargetPath, $ProtocolCommandPath
+Set-ItemProperty -Path $protocolCommand -Name '(Default)' -Value $commandValue
