@@ -251,9 +251,12 @@ fieldset legend { margin-bottom: 9px; }
 .timeline-list .reminder-card.timing-due::before { background: var(--coral); box-shadow: 0 0 0 4px rgba(255,128,102,.12), 0 0 20px var(--coral); animation: pulse-coral 1.3s ease-out infinite; }
 .reminder-card.disabled { opacity: .58; filter: saturate(.55); box-shadow: none; }
 .reminder-card.completed { background: rgba(10, 27, 47, .46); box-shadow: none; }
+.reminder-card.awaiting_confirmation { border-color: rgba(255, 191, 102, .5); background: linear-gradient(130deg, rgba(55, 47, 54, .78), rgba(18, 29, 49, .8)); }
+.timeline-list .reminder-card.awaiting_confirmation::before { background: #ffbf66; box-shadow: 0 0 0 1px rgba(255,191,102,.7), 0 0 17px rgba(255,191,102,.8); }
 
 .card-kicker { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 8px; color: var(--cyan); font-size: .62rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .card-kicker .disabled-label { color: var(--coral); }
+.card-kicker .waiting-label { color: #ffbf66; }
 .reminder-card h3 { margin: 0 0 7px; overflow-wrap: anywhere; color: var(--white); font-size: 1.16rem; line-height: 1.2; letter-spacing: -.025em; }
 .reminder-card p { margin: 0; overflow-wrap: anywhere; color: var(--mist); font-size: .75rem; line-height: 1.55; white-space: pre-wrap; }
 .time-left { align-self: start; min-width: 112px; color: var(--white); font-size: .85rem; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
@@ -262,6 +265,7 @@ fieldset legend { margin-bottom: 9px; }
 .card-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 16px; padding-top: 11px; border-top: 1px solid rgba(157, 193, 229, .1); }
 .card-actions button { border: 0; padding: 0; color: var(--mist); background: transparent; cursor: pointer; font-size: .65rem; text-decoration: underline; text-decoration-color: rgba(145,166,195,.4); text-underline-offset: 4px; }
 .card-actions button:hover { color: var(--cyan); }
+.card-actions button:first-child { color: var(--cyan); font-weight: 700; }
 
 .empty-state { position: relative; padding: 56px 24px; border: 1px dashed rgba(174, 225, 255, .2); border-radius: 20px; color: var(--mist); background: rgba(9, 25, 44, .38); font-size: .82rem; line-height: 1.6; text-align: center; }
 .empty-state::before { display: block; width: 11px; height: 11px; margin: 0 auto 15px; border: 1px solid var(--cyan); border-radius: 50%; content: ""; box-shadow: 0 0 0 7px rgba(93,228,244,.06), 0 0 20px rgba(93,228,244,.3); }

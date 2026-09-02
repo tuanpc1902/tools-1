@@ -11,6 +11,8 @@ const {
   getTimingTone,
   normalizeViewMode,
   getNextViewMode,
+  getConfirmationPath,
+  getStatusLabel,
 } = require('../public/app');
 
 test('countdown fields convert to one positive total', () => {
@@ -48,6 +50,12 @@ test('view mode toggle cycles Aurora, Focus, and Daylight safely', () => {
   assert.equal(getNextViewMode('aurora'), 'focus');
   assert.equal(getNextViewMode('focus'), 'daylight');
   assert.equal(getNextViewMode('daylight'), 'aurora');
+});
+
+test('awaiting reminders expose a confirmation path and status label', () => {
+  assert.equal(getConfirmationPath({ id: 'loop/1' }), '/api/reminders/loop%2F1/confirm');
+  assert.equal(getStatusLabel({ status: 'awaiting_confirmation' }), 'Awaiting confirmation');
+  assert.equal(getStatusLabel({ status: 'active' }), '');
 });
 
 test('reminders group active first by trigger time and completed newest first', () => {

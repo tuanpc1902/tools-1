@@ -53,6 +53,14 @@
     return 'aurora';
   }
 
+  function getConfirmationPath(reminder) {
+    return `/api/reminders/${encodeURIComponent(reminder.id)}/confirm`;
+  }
+
+  function getStatusLabel(reminder) {
+    return reminder.status === 'awaiting_confirmation' ? 'Awaiting confirmation' : '';
+  }
+
   function groupReminders(reminders) {
     const active = reminders
       .filter(reminder => reminder.status !== 'fired')
@@ -108,6 +116,8 @@
     getTimingTone,
     normalizeViewMode,
     getNextViewMode,
+    getConfirmationPath,
+    getStatusLabel,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = exported;
   if (typeof document === 'undefined') return;
@@ -244,6 +254,13 @@
     const kind = document.createElement('span');
     kind.textContent = getRepeatLabel(reminder);
     kicker.append(kind);
+    const statusLabel = getStatusLabel(reminder);
+    if (statusLabel) {
+      const waiting = document.createElement('span');
+      waiting.className = 'waiting-label';
+      waiting.textContent = statusLabel;
+      kicker.append(waiting);
+    }
     if (reminder.status === 'disabled') {
       const off = document.createElement('span');
       off.className = 'disabled-label';
@@ -259,7 +276,11 @@
     const timing = document.createElement('div');
     timing.className = 'time-left';
     timing.dataset.triggerAt = reminder.triggerAt;
-    timing.textContent = reminder.status === 'fired' ? 'Completed' : formatRemaining(reminder.triggerAt - Date.now());
+    timing.textContent = reminder.status === 'fired'
+      ? 'Completed'
+      : reminder.status === 'awaiting_confirmation'
+        ? 'Confirm to continue'
+        : formatRemaining(reminder.triggerAt - Date.now());
     const date = document.createElement('span');
     date.className = 'trigger-date';
     date.textContent = new Date(reminder.triggerAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
@@ -267,7 +288,9 @@
 
     const actions = document.createElement('div');
     actions.className = 'card-actions';
-    if (reminder.status !== 'fired') {
+    if (reminder.status === 'awaiting_confirmation') {
+      actions.append(makeButton('Confirm', confirmReminderFromUi, reminder));
+    } else if (reminder.status !== 'fired') {
       actions.append(
         makeButton('Edit', beginEdit, reminder),
         makeButton(reminder.status === 'active' ? 'Pause' : 'Enable', toggleReminder, reminder),
@@ -304,6 +327,16 @@
       renderReminders(await request('/api/reminders'));
     } catch (error) {
       elements.status.textContent = `Could not load reminders: ${error.message}`;
+      elements.status.classList.remove('success');
+    }
+  }
+
+  async function confirmReminderFromUi(reminder) {
+    try {
+      await request(getConfirmationPath(reminder), { method: 'POST', body: '{}' });
+      await loadReminders();
+    } catch (error) {
+      elements.status.textContent = error.message;
       elements.status.classList.remove('success');
     }
   }
@@ -413,7 +446,7 @@
     document.querySelectorAll('.time-left[data-trigger-at]').forEach(node => {
       const date = node.querySelector('.trigger-date');
       const card = node.closest('.reminder-card');
-      if (card.classList.contains('completed')) return;
+      if (card.classList.contains('completed') || card.classList.contains('awaiting_confirmation')) return;
       const remaining = Number(node.dataset.triggerAt) - now;
       node.firstChild.textContent = formatRemaining(remaining);
       if (card.classList.contains('active')) {

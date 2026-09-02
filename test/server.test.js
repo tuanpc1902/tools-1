@@ -110,7 +110,7 @@ test('API and scheduler share durable reminder state', async () => {
   });
 });
 
-test('API interval reminder stays active and skips missed occurrences', async () => {
+test('API interval reminder waits for confirmation before starting its next cycle', async () => {
   await withServer(async ({ baseUrl, scheduler, delivered, setNow }) => {
     const createdResponse = await fetch(`${baseUrl}/api/reminders`, {
       method: 'POST',
@@ -128,7 +128,17 @@ test('API interval reminder stays active and skips missed occurrences', async ()
     assert.equal(delivered[0].id, created.id);
     const listed = await (await fetch(`${baseUrl}/api/reminders`)).json();
     assert.equal(listed[0].id, created.id);
-    assert.equal(listed[0].status, 'active');
-    assert.equal(listed[0].triggerAt, 61_000);
+    assert.equal(listed[0].status, 'awaiting_confirmation');
+    assert.equal(listed[0].triggerAt, 11_000);
+
+    const confirmedResponse = await fetch(`${baseUrl}/api/reminders/${created.id}/confirm`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{}',
+    });
+    assert.equal(confirmedResponse.status, 200);
+    const confirmed = await confirmedResponse.json();
+    assert.equal(confirmed.status, 'active');
+    assert.equal(confirmed.triggerAt, 66_000);
   });
 });

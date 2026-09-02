@@ -35,7 +35,7 @@ Press **Ctrl+C** in the command window to stop the app. Reminders do not fire wh
 - **Every interval**: alert after the selected duration and continue at that interval until paused or deleted.
 - **Daily**: alert at the selected local time every day until paused or deleted.
 
-If the app was stopped through several repeat occurrences, it produces at most one overdue alert and advances directly to the next future occurrence. It does not flood the desktop with missed alerts. Toasts do not need an **OK** confirmation, so every repeat interval is scheduled independently. Depending on Windows notification settings, recent reminders can also remain in Notification Center.
+Recurring alerts pause after they appear until you click **Confirm** in the Windows toast or on the matching web card. The next interval starts from that confirmation time; an unconfirmed alert does not create another cycle or duplicate toast. If the app was stopped through several repeat occurrences, it produces at most one overdue alert and waits for confirmation rather than flooding the desktop.
 
 Clicking a toast does not open or change the reminder in this version. If Windows identity registration or toast submission fails, the due reminder and error are printed in the command window instead.
 
