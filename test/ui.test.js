@@ -9,6 +9,8 @@ const {
   getRepeatPayload,
   getRepeatLabel,
   getTimingTone,
+  normalizeViewMode,
+  getNextViewMode,
 } = require('../public/app');
 
 test('countdown fields convert to one positive total', () => {
@@ -36,6 +38,14 @@ test('timeline urgency changes at due and five-minute boundaries', () => {
   assert.equal(getTimingTone(1), 'soon');
   assert.equal(getTimingTone(300_000), 'soon');
   assert.equal(getTimingTone(300_001), 'scheduled');
+});
+
+test('view mode toggle alternates between Aurora and Focus safely', () => {
+  assert.equal(normalizeViewMode('aurora'), 'aurora');
+  assert.equal(normalizeViewMode('focus'), 'focus');
+  assert.equal(normalizeViewMode('anything-else'), 'aurora');
+  assert.equal(getNextViewMode('aurora'), 'focus');
+  assert.equal(getNextViewMode('focus'), 'aurora');
 });
 
 test('reminders group active first by trigger time and completed newest first', () => {

@@ -132,6 +132,12 @@ button { color: inherit; }
 .running i { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 0 4px rgba(93, 228, 244, .1), 0 0 14px var(--cyan); animation: pulse 2s ease-out infinite; }
 .clock-block > strong { min-width: 212px; color: var(--white); font-size: clamp(2.1rem, 4.6vw, 4rem); line-height: .9; letter-spacing: -.075em; text-align: right; font-variant-numeric: tabular-nums; text-shadow: 0 0 30px rgba(93, 228, 244, .16); }
 
+.view-toggle { display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto; border: 1px solid var(--line-bright); border-radius: 999px; padding: 9px 12px 9px 9px; color: var(--mist); background: rgba(93, 228, 244, .04); cursor: pointer; font-size: .65rem; font-weight: 700; letter-spacing: .04em; transition: color .18s ease, border-color .18s ease, background .18s ease, transform .18s ease; }
+.view-toggle:hover { color: var(--white); border-color: rgba(93, 228, 244, .55); background: rgba(93, 228, 244, .1); transform: translateY(-1px); }
+.view-toggle[aria-pressed="true"] { color: var(--white); border-color: rgba(155, 140, 255, .58); background: rgba(155, 140, 255, .12); }
+.toggle-glyph { display: grid; width: 22px; height: 22px; place-items: center; border-radius: 50%; color: var(--cyan); background: rgba(93, 228, 244, .1); font-size: 1rem; line-height: 1; }
+.view-toggle[aria-pressed="true"] .toggle-glyph { color: #c3baff; background: rgba(155, 140, 255, .16); }
+
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(250px, .6fr);
@@ -260,6 +266,21 @@ fieldset legend { margin-bottom: 9px; }
 .empty-state { position: relative; padding: 56px 24px; border: 1px dashed rgba(174, 225, 255, .2); border-radius: 20px; color: var(--mist); background: rgba(9, 25, 44, .38); font-size: .82rem; line-height: 1.6; text-align: center; }
 .empty-state::before { display: block; width: 11px; height: 11px; margin: 0 auto 15px; border: 1px solid var(--cyan); border-radius: 50%; content: ""; box-shadow: 0 0 0 7px rgba(93,228,244,.06), 0 0 20px rgba(93,228,244,.3); }
 
+body[data-view-mode="focus"] { background: #0a1423; }
+body[data-view-mode="focus"] .aurora { display: none; }
+body[data-view-mode="focus"] .masthead { border-radius: 14px; background: rgba(12, 26, 45, .92); box-shadow: none; }
+body[data-view-mode="focus"] .hero { grid-template-columns: 1fr auto; align-items: center; padding: 48px 8px 38px; }
+body[data-view-mode="focus"] .hero h1 { font-size: clamp(2.4rem, 5vw, 4.2rem); }
+body[data-view-mode="focus"] .hero-copy { max-width: 31ch; }
+body[data-view-mode="focus"] .glass-panel { border-radius: 16px; background: rgba(12, 28, 48, .9); box-shadow: 0 16px 42px rgba(0, 4, 13, .24); }
+body[data-view-mode="focus"] .composer { padding: 26px; }
+body[data-view-mode="focus"] .timeline-list { padding-left: 0; }
+body[data-view-mode="focus"] .timeline-list::before,
+body[data-view-mode="focus"] .timeline-list .reminder-card::before { display: none; }
+body[data-view-mode="focus"] .reminder-card { grid-template-columns: minmax(0, 1fr) 150px; border-radius: 12px; padding: 16px 18px; background: rgba(12, 28, 48, .76); box-shadow: 0 8px 24px rgba(0, 4, 13, .18); }
+body[data-view-mode="focus"] .reminder-card:hover { transform: translateY(-2px); }
+body[data-view-mode="focus"] .completed-drawer { margin-top: 26px; }
+
 .completed-drawer { margin-top: 36px; border-top: 1px solid var(--line); }
 .completed-drawer summary { display: flex; justify-content: space-between; padding: 17px 2px; color: var(--mist); cursor: pointer; font-size: .8rem; font-weight: 700; }
 .completed-drawer summary:hover { color: var(--moon); }
@@ -284,11 +305,14 @@ button:focus-visible, summary:focus-visible, .brand:focus-visible { outline: 2px
   .clock-block { gap: 10px; }
   .clock-meta { display: none; }
   .clock-block > strong { min-width: 0; font-size: clamp(1.55rem, 8vw, 2.5rem); }
+  .view-toggle { padding-right: 9px; }
+  .view-toggle span:last-child { display: none; }
   .hero { grid-template-columns: 1fr; gap: 24px; padding: 54px 4px 48px; }
   h1 { font-size: clamp(2.7rem, 13vw, 4.8rem); }
   .hero-copy { max-width: 48ch; }
   .desk-grid { grid-template-columns: 1fr; gap: 58px; }
   .composer { position: relative; top: auto; }
+  body[data-view-mode="focus"] .hero { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 500px) {

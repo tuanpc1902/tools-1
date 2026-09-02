@@ -25,6 +25,8 @@ On first start, the app automatically creates a per-user **Reminder Desk** short
 
 The UI opens at `http://127.0.0.1:4317`. Keep the command window open while reminders are active. The browser tab may be closed; alerts still work because scheduling happens in the command process.
 
+Use the view toggle in the top-right corner to switch between the Aurora command center and the compact Focus list. The selected view is remembered locally in your browser.
+
 Press **Ctrl+C** in the command window to stop the app. Reminders do not fire while the app is stopped, but saved future reminders remain available after restart. Overdue active reminders fire shortly after restart.
 
 ## Repeat options

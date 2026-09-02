@@ -42,6 +42,14 @@
     return 'scheduled';
   }
 
+  function normalizeViewMode(value) {
+    return value === 'focus' ? 'focus' : 'aurora';
+  }
+
+  function getNextViewMode(current) {
+    return normalizeViewMode(current) === 'aurora' ? 'focus' : 'aurora';
+  }
+
   function groupReminders(reminders) {
     const active = reminders
       .filter(reminder => reminder.status !== 'fired')
@@ -95,6 +103,8 @@
     getRepeatPayload,
     getRepeatLabel,
     getTimingTone,
+    normalizeViewMode,
+    getNextViewMode,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = exported;
   if (typeof document === 'undefined') return;
@@ -122,9 +132,34 @@
     completedCount: document.querySelector('#completed-count'),
     currentDate: document.querySelector('#current-date'),
     currentTime: document.querySelector('#current-time'),
+    viewToggle: document.querySelector('#view-toggle'),
+    viewModeLabel: document.querySelector('#view-mode-label'),
   };
 
   let reminders = [];
+
+  function loadViewMode() {
+    try {
+      return normalizeViewMode(window.localStorage.getItem('reminder-desk-view-mode'));
+    } catch {
+      return 'aurora';
+    }
+  }
+
+  function setViewMode(mode, persist = true) {
+    const nextMode = normalizeViewMode(mode);
+    document.body.dataset.viewMode = nextMode;
+    elements.viewToggle.setAttribute('aria-pressed', String(nextMode === 'focus'));
+    elements.viewToggle.setAttribute('aria-label', `Switch to ${nextMode === 'aurora' ? 'Focus list' : 'Aurora'} view`);
+    elements.viewModeLabel.textContent = nextMode === 'aurora' ? 'Focus list' : 'Aurora';
+    if (persist) {
+      try {
+        window.localStorage.setItem('reminder-desk-view-mode', nextMode);
+      } catch {
+        // Private browsing or disabled storage should not block the toggle.
+      }
+    }
+  }
 
   async function request(path, options = {}) {
     const response = await fetch(path, {
@@ -384,6 +419,8 @@
   }
 
   elements.form.addEventListener('submit', submitReminder);
+  setViewMode(loadViewMode(), false);
+  elements.viewToggle.addEventListener('click', () => setViewMode(getNextViewMode(document.body.dataset.viewMode)));
   elements.cancelEdit.addEventListener('click', () => resetForm());
   document.querySelectorAll('input[name="mode"]').forEach(input => {
     input.addEventListener('change', updateScheduleFields);
