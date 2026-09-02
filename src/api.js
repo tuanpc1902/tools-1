@@ -1,4 +1,4 @@
-const { createReminder, applyReminderPatch } = require('./reminders');
+const { createReminder, applyReminderPatch, confirmReminder } = require('./reminders');
 
 const BODY_LIMIT = 64 * 1024;
 
@@ -41,6 +41,7 @@ function createApiHandler({ store, now = Date.now }) {
   return async function apiHandler(request, response) {
     const url = new URL(request.url, 'http://localhost');
     const collectionRoute = url.pathname === '/api/reminders';
+    const confirmMatch = url.pathname.match(/^\/api\/reminders\/([^/]+)\/confirm$/);
     const itemMatch = url.pathname.match(/^\/api\/reminders\/([^/]+)$/);
 
     try {
@@ -52,6 +53,22 @@ function createApiHandler({ store, now = Date.now }) {
         const reminder = createReminder(await readJson(request), now());
         await store.upsert(reminder);
         return sendJson(response, 201, reminder);
+      }
+
+      if (confirmMatch && request.method === 'POST') {
+        const id = decodeURIComponent(confirmMatch[1]);
+        const existing = store.list().find(reminder => reminder.id === id);
+        if (!existing) return sendJson(response, 404, { error: 'Reminder not found' });
+        await readJson(request);
+        let reminder;
+        try {
+          reminder = confirmReminder(existing, now());
+        } catch (error) {
+          if (error.message === 'Reminder is not awaiting confirmation') error.statusCode = 409;
+          throw error;
+        }
+        await store.upsert(reminder);
+        return sendJson(response, 200, reminder);
       }
 
       if (itemMatch && request.method === 'PATCH') {

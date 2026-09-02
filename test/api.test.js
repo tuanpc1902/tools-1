@@ -22,9 +22,9 @@ function createMemoryStore() {
   };
 }
 
-async function withApi(callback) {
+async function withApi(callback, now = 1_000) {
   const store = createMemoryStore();
-  const handler = createApiHandler({ store, now: () => 1_000 });
+  const handler = createApiHandler({ store, now: () => now });
   const server = http.createServer(handler);
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const { port } = server.address();
@@ -138,4 +138,50 @@ test('API creates and converts interval and daily repeat policies', async () => 
     assert.equal(daily.dailyTime, '08:15');
     assert.ok(daily.triggerAt > 1_000);
   });
+});
+
+test('API confirms awaiting recurring reminders and rejects invalid confirmation states', async () => {
+  await withApi(async (baseUrl, store) => {
+    await store.upsert({
+      id: 'waiting',
+      title: 'Stretch',
+      message: '',
+      mode: 'countdown',
+      triggerAt: 61_000,
+      repeatType: 'interval',
+      repeatIntervalSeconds: 60,
+      dailyTime: null,
+      status: 'awaiting_confirmation',
+      createdAt: 1_000,
+      firedAt: null,
+      alertedAt: 61_000,
+      confirmedAt: null,
+    });
+
+    const confirmed = await fetch(`${baseUrl}/api/reminders/waiting/confirm`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{}',
+    });
+    assert.equal(confirmed.status, 200);
+    const active = await confirmed.json();
+    assert.equal(active.status, 'active');
+    assert.equal(active.triggerAt, 61_000);
+    assert.equal(active.confirmedAt, 1_000);
+
+    const notWaiting = await fetch(`${baseUrl}/api/reminders/waiting/confirm`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{}',
+    });
+    assert.equal(notWaiting.status, 409);
+    assert.deepEqual(await notWaiting.json(), { error: 'Reminder is not awaiting confirmation' });
+
+    const missing = await fetch(`${baseUrl}/api/reminders/missing/confirm`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{}',
+    });
+    assert.equal(missing.status, 404);
+  }, 1_000);
 });
