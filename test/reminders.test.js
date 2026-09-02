@@ -8,6 +8,8 @@ const {
   markFired,
   getNextDailyTrigger,
   advanceAfterDue,
+  markAwaitingConfirmation,
+  confirmReminder,
 } = require('../src/reminders');
 
 test('countdown input becomes an absolute trigger timestamp', () => {
@@ -21,6 +23,8 @@ test('countdown input becomes an absolute trigger timestamp', () => {
   assert.equal(reminder.triggerAt, 91_000);
   assert.equal(reminder.status, 'active');
   assert.equal(reminder.createdAt, 1_000);
+  assert.equal(reminder.alertedAt, null);
+  assert.equal(reminder.confirmedAt, null);
 });
 
 test('date/time reminders reject timestamps that are not in the future', () => {
@@ -160,9 +164,41 @@ test('overdue interval advances past missed occurrences without completing', () 
   };
   const advanced = advanceAfterDue(reminder, 35_000);
 
-  assert.equal(advanced.status, 'active');
-  assert.equal(advanced.triggerAt, 41_000);
-  assert.equal(advanced.firedAt, 35_000);
+  assert.equal(advanced.status, 'awaiting_confirmation');
+  assert.equal(advanced.triggerAt, 1_000);
+  assert.equal(advanced.alertedAt, 35_000);
+});
+
+test('recurring due reminders wait for confirmation without advancing', () => {
+  const reminder = createReminder({ title: 'Stretch', repeatType: 'interval', repeatIntervalSeconds: 60 }, 1_000);
+  const waiting = markAwaitingConfirmation(reminder, 61_000);
+  assert.equal(waiting.status, 'awaiting_confirmation');
+  assert.equal(waiting.triggerAt, reminder.triggerAt);
+  assert.equal(waiting.alertedAt, 61_000);
+  assert.equal(reminder.status, 'active');
+});
+
+test('confirmation starts the next interval from the confirmation time', () => {
+  const reminder = createReminder({ title: 'Stretch', repeatType: 'interval', repeatIntervalSeconds: 60 }, 1_000);
+  const waiting = markAwaitingConfirmation(reminder, 61_000);
+  const active = confirmReminder(waiting, 90_000);
+  assert.equal(active.status, 'active');
+  assert.equal(active.triggerAt, 150_000);
+  assert.equal(active.confirmedAt, 90_000);
+  assert.equal(active.alertedAt, null);
+});
+
+test('daily confirmation schedules the next local occurrence', () => {
+  const reminder = createReminder({ title: 'Review', repeatType: 'daily', dailyTime: '08:15' }, new Date('2030-05-10T07:00:00').getTime());
+  const waiting = markAwaitingConfirmation(reminder, new Date('2030-05-10T08:15:00').getTime());
+  const active = confirmReminder(waiting, new Date('2030-05-10T08:20:00').getTime());
+  assert.equal(active.status, 'active');
+  assert.equal(active.triggerAt, new Date('2030-05-11T08:15:00').getTime());
+});
+
+test('confirmation rejects reminders that are not awaiting', () => {
+  const reminder = createReminder({ title: 'Stretch', repeatType: 'interval', repeatIntervalSeconds: 60 }, 1_000);
+  assert.throws(() => confirmReminder(reminder, 2_000), /awaiting confirmation/);
 });
 
 test('legacy reminders without repeat metadata complete once', () => {

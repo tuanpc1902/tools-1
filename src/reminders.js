@@ -108,6 +108,8 @@ function createReminder(input, now = Date.now()) {
     status: 'active',
     createdAt: now,
     firedAt: null,
+    alertedAt: null,
+    confirmedAt: null,
   };
 }
 
@@ -134,6 +136,8 @@ function applyReminderPatch(existing, patch, now = Date.now()) {
     Object.assign(next, schedule);
     next.status = 'active';
     next.firedAt = null;
+    next.alertedAt = null;
+    next.confirmedAt = null;
   }
 
   if (patch.enabled !== undefined) {
@@ -155,33 +159,49 @@ function markFired(reminder, now = Date.now()) {
   return { ...reminder, status: 'fired', firedAt: now };
 }
 
-function advanceAfterDue(reminder, now = Date.now()) {
-  const repeatType = reminder.repeatType ?? 'none';
-  if (repeatType === 'none') return markFired(reminder, now);
+function markAwaitingConfirmation(reminder, now = Date.now()) {
+  return {
+    ...reminder,
+    status: 'awaiting_confirmation',
+    alertedAt: now,
+    confirmedAt: null,
+    firedAt: null,
+  };
+}
 
+function confirmReminder(reminder, now = Date.now()) {
+  if (reminder.status !== 'awaiting_confirmation') {
+    throw new RangeError('Reminder is not awaiting confirmation');
+  }
+
+  const repeatType = reminder.repeatType ?? 'none';
+  let triggerAt;
   if (repeatType === 'interval') {
     const intervalMs = Number(reminder.repeatIntervalSeconds) * 1_000;
     if (!Number.isFinite(intervalMs) || intervalMs <= 0) {
       throw new RangeError('Repeat interval must be positive');
     }
-    const steps = Math.floor((now - reminder.triggerAt) / intervalMs) + 1;
-    return {
-      ...reminder,
-      status: 'active',
-      triggerAt: reminder.triggerAt + Math.max(1, steps) * intervalMs,
-      firedAt: now,
-    };
+    triggerAt = now + intervalMs;
+  } else if (repeatType === 'daily') {
+    triggerAt = getNextDailyTrigger(reminder.dailyTime, now);
+  } else {
+    throw new RangeError('Only recurring reminders can be confirmed');
   }
 
-  if (repeatType === 'daily') {
-    return {
-      ...reminder,
-      status: 'active',
-      triggerAt: getNextDailyTrigger(reminder.dailyTime, now),
-      firedAt: now,
-    };
-  }
+  return {
+    ...reminder,
+    status: 'active',
+    triggerAt,
+    alertedAt: null,
+    confirmedAt: now,
+    firedAt: null,
+  };
+}
 
+function advanceAfterDue(reminder, now = Date.now()) {
+  const repeatType = reminder.repeatType ?? 'none';
+  if (repeatType === 'none') return markFired(reminder, now);
+  if (repeatType === 'interval' || repeatType === 'daily') return markAwaitingConfirmation(reminder, now);
   throw new RangeError('Repeat type must be none, interval, or daily');
 }
 
@@ -190,6 +210,8 @@ module.exports = {
   applyReminderPatch,
   getDueReminders,
   markFired,
+  markAwaitingConfirmation,
+  confirmReminder,
   getNextDailyTrigger,
   advanceAfterDue,
 };
