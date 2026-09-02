@@ -33,6 +33,17 @@ test('toast XML escapes reminder text and includes an optional message', () => {
   );
 });
 
+test('recurring toast includes a Confirm protocol action', () => {
+  assert.equal(
+    buildToastXml({ id: 'loop/1', title: 'Stretch', message: '', repeatType: 'interval' }),
+    '<toast><visual><binding template="ToastGeneric"><text>Stretch</text></binding></visual><actions><action content="Confirm" activationType="protocol" arguments="reminderdesk://confirm/loop%2F1"/></actions></toast>',
+  );
+  assert.doesNotMatch(
+    buildToastXml({ id: 'once', title: 'Tea', message: '', repeatType: 'none' }),
+    /<actions>/,
+  );
+});
+
 test('popup submits ToastGeneric XML using the registered app identity', async () => {
   const recorder = exitingSpawnRecorder();
   await showWindowsPopup(

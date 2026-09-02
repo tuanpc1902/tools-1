@@ -28,7 +28,10 @@ function buildToastXml(reminder) {
   const message = reminder.message
     ? `<text>${escapeXml(reminder.message)}</text>`
     : '';
-  return `<toast><visual><binding template="ToastGeneric">${title}${message}</binding></visual></toast>`;
+  const actions = reminder.id && (reminder.repeatType === 'interval' || reminder.repeatType === 'daily')
+    ? `<actions><action content="Confirm" activationType="protocol" arguments="reminderdesk://confirm/${escapeXml(encodeURIComponent(reminder.id))}"/></actions>`
+    : '';
+  return `<toast><visual><binding template="ToastGeneric">${title}${message}</binding></visual>${actions}</toast>`;
 }
 
 function showWindowsPopup(reminder, { spawn = nodeSpawn } = {}) {
