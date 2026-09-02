@@ -40,12 +40,14 @@ test('timeline urgency changes at due and five-minute boundaries', () => {
   assert.equal(getTimingTone(300_001), 'scheduled');
 });
 
-test('view mode toggle alternates between Aurora and Focus safely', () => {
+test('view mode toggle cycles Aurora, Focus, and Daylight safely', () => {
   assert.equal(normalizeViewMode('aurora'), 'aurora');
   assert.equal(normalizeViewMode('focus'), 'focus');
+  assert.equal(normalizeViewMode('daylight'), 'daylight');
   assert.equal(normalizeViewMode('anything-else'), 'aurora');
   assert.equal(getNextViewMode('aurora'), 'focus');
-  assert.equal(getNextViewMode('focus'), 'aurora');
+  assert.equal(getNextViewMode('focus'), 'daylight');
+  assert.equal(getNextViewMode('daylight'), 'aurora');
 });
 
 test('reminders group active first by trigger time and completed newest first', () => {

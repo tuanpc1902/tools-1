@@ -43,11 +43,14 @@
   }
 
   function normalizeViewMode(value) {
-    return value === 'focus' ? 'focus' : 'aurora';
+    return ['aurora', 'focus', 'daylight'].includes(value) ? value : 'aurora';
   }
 
   function getNextViewMode(current) {
-    return normalizeViewMode(current) === 'aurora' ? 'focus' : 'aurora';
+    const mode = normalizeViewMode(current);
+    if (mode === 'aurora') return 'focus';
+    if (mode === 'focus') return 'daylight';
+    return 'aurora';
   }
 
   function groupReminders(reminders) {
@@ -134,6 +137,7 @@
     currentTime: document.querySelector('#current-time'),
     viewToggle: document.querySelector('#view-toggle'),
     viewModeLabel: document.querySelector('#view-mode-label'),
+    viewModeGlyph: document.querySelector('#view-mode-glyph'),
   };
 
   let reminders = [];
@@ -149,9 +153,11 @@
   function setViewMode(mode, persist = true) {
     const nextMode = normalizeViewMode(mode);
     document.body.dataset.viewMode = nextMode;
-    elements.viewToggle.setAttribute('aria-pressed', String(nextMode === 'focus'));
-    elements.viewToggle.setAttribute('aria-label', `Switch to ${nextMode === 'aurora' ? 'Focus list' : 'Aurora'} view`);
-    elements.viewModeLabel.textContent = nextMode === 'aurora' ? 'Focus list' : 'Aurora';
+    elements.viewToggle.setAttribute('aria-pressed', String(nextMode !== 'aurora'));
+    const nextLabel = nextMode === 'aurora' ? 'Focus list' : nextMode === 'focus' ? 'Daylight' : 'Aurora';
+    elements.viewToggle.setAttribute('aria-label', `Switch to ${nextLabel} view`);
+    elements.viewModeLabel.textContent = nextLabel;
+    elements.viewModeGlyph.textContent = nextMode === 'focus' ? '◒' : nextMode === 'daylight' ? '☼' : '◐';
     if (persist) {
       try {
         window.localStorage.setItem('reminder-desk-view-mode', nextMode);
